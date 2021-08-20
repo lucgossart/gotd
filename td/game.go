@@ -1,28 +1,42 @@
 package td
 
-// Interface for the loop. Implements ebiten's Game interface. 
-// All the impurity of the game logic should happen in 
+import "log"
+
+// All the impurity of the game logic should happen in
 // the update function, the rest of the code should be made
-// of pure functions. (Actually Game.Draw() has side effect, but
-// should not modify the Game object.
-type Game struct {
-	count     int
-	animation []Image
-	screen    Screen
-	displayer Displayer
+// of pure functions. (Actually State.Draw() has side effect, but
+// should not modify the State object.)
+type State struct {
+	count      int
+	animations []Animation
+	position   Position
+	displayer  Displayer
 }
 
-func (game *Game) Draw(screen *Image) {
-	game.displayer.Display(game.screen, game.animation[0], Position{})
+func (state State) Draw(screen PImage) {
+	for _, animation := range state.animations {
+		state.displayer.Display(
+			screen,
+			getImage(animation),
+			state.position,
+			animation.Scale,
+		)
+	}
 }
 
-func (*Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return 0, 1
-}
-
-func (game *Game) Update() error {
-	game.count ++
+func (state *State) Update() error {
+	state.count++
+	if state.count%3 == 0 {
+		state.position.X++
+		state.position.Y++
+		log.Println(state.position)
+	}
+	for _, animation := range state.animations {
+		animation.update()
+	}
 	return nil
 }
 
-
+func CreateState(count int, animations []Animation, displayer Displayer) State {
+	return State{count, animations, Position{}, displayer}
+}

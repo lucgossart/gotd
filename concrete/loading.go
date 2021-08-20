@@ -22,7 +22,12 @@ func (l Loader) Load(path string) (*ebiten.Image, error) {
 
 type Displayer struct{}
 
-func (Displayer) Display(screen *ebiten.Image, image ebiten.Image) {
+type Position struct {
+	x int
+	y int
+}
+
+func (Displayer) Display(screen *ebiten.Image, image ebiten.Image, position Position) {
 	op := &ebiten.DrawImageOptions{}
 	screen.DrawImage(&image, op)
 }

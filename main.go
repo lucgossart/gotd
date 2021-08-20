@@ -4,41 +4,76 @@ import (
 	// "bytes"
 	// "image"
 	_ "image/png"
+	// "fmt"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
+
 	// "github.com/hajimehoshi/ebiten/v2/examples/resources/images"
 
-	"./td"
+	"game/ebitd"
+	"game/paths"
+	"game/td"
 )
 
 const (
-	screenWidth  = 320
-	screenHeight = 240
+	screenWidth  = 800
+	screenHeight = 600
 )
 
-type Game td.Game
+type Game struct {
+	state td.State
+}
 
-// func (g *Game) Update() error {
-// 	g.count ++
-// 	return nil
-// }
+func (*Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return screenWidth, screenHeight
+}
 
-// func (g *Game) Draw(screen *ebiten.Image) {
-// }
+func (g *Game) Draw(screen *ebiten.Image) {
+	g.state.Draw(screen)
+}
 
-// func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-// 	return screenWidth, screenHeight
-// }
+func (g *Game) Update() error {
+	return (&g.state).Update()
+}
 
-func main() {
-
+func init() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Ouais grand")
+}
 
-	game := Game{}
+func createShootingArcherAnim() td.Animation {
+	var runningArcherPaths = paths.GetShootingArcher()
+	scale := td.Scale{WFactor: 3, HFactor: 3}
+	duration := 7
+	animation, err := ebitd.CreateAnim(runningArcherPaths, scale, duration)
+	if err != nil {
+		log.Fatalf("Error loading archers: %v", err)
+	}
+	return animation
+}
 
-	
+func createRunningArcherAnim() td.Animation {
+	var runningArcherPaths = paths.GetRunningArcher()
+	scale := td.Scale{WFactor: 3, HFactor: 3}
+	duration := 7
+	animation, err := ebitd.CreateAnim(runningArcherPaths, scale, duration)
+	if err != nil {
+		log.Fatalf("Error loading archers: %v", err)
+	}
+	return animation
+}
+
+func main() {
+	var displayer ebitd.Displayer
+	var runningArcherAnim td.Animation = createRunningArcherAnim()
+	var shootingArcherAnim td.Animation = createRunningArcherAnim()
+	animations := []td.Animation{runningArcherAnim, shootingArcherAnim}
+
+	count := 0
+	state := td.CreateState(count, animations, displayer)
+	game := Game{state}
+
 	if err := ebiten.RunGame(&game); err != nil {
 		log.Fatal(err)
 	}

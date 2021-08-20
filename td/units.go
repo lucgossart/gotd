@@ -1,7 +1,10 @@
 package td
 
 type Position struct {
-	x int
-	y int
+	X float64
+	Y float64
 }
 
+type Unit interface {
+	move()
+}
