@@ -8,8 +8,13 @@ type Loader interface {
 }
 
 type Image interface{}
+
 // Interface to pointer of image.
 type PImage interface{}
+
+type Displayer interface {
+	Display(screen PImage, image PImage, position Position, scale Scale) error
+}
 
 // Specifies by how much an image should be resized.
 type Scale struct {
@@ -21,31 +26,39 @@ type Scale struct {
 // duration and nbTicks.
 // The coeffs specify the factor by which to multiply the
 // base image.
-type Animation struct{
-	nbTicks     int
-	Duration    int
-	index       int
-	Images      []PImage
-	Scale       Scale
+// It is important that no method modifies the underlying
+// array of Images.
+type Animation struct {
+	nbTicks  int
+	Duration int
+	index    int
+	images   []PImage
+	Scale    Scale
+}
+
+func NewAnim(
+	nbTicks int,
+	Duration int,
+	index int,
+	images []PImage,
+	Scale Scale,
+) *Animation {
+	return &Animation{nbTicks, Duration, index, images, Scale}
 }
 
 // Pure function,
 // Returns image corresponding to a.index.
 func getImage(a Animation) PImage {
-	return a.Images[a.index]
+	return a.images[a.index]
 }
 
 // All the impurity should reside here.
 // Increases a.nbTicks and rotates a.index
 // if a.nbTicks is greater than a.Duration
-func (a *Animation)update() {
+func (a *Animation) change() {
 	a.nbTicks++
 	if a.nbTicks > a.Duration {
-		a.index = (a.index + 1) % len(a.Images)
+		a.index = (a.index + 1) % len(a.images)
 		a.nbTicks = 0
 	}
-}
-
-type Displayer interface {
-	Display(screen PImage, image PImage, position Position, scale Scale) error
 }
